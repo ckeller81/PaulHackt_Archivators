@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_file, request, Response
+from flask import Flask, jsonify, send_file, request, abort
 import os
 from PIL import Image
 
@@ -35,7 +35,7 @@ def images(path):
 
     if not os.path.exists(full_image_path):
         # Return 404 error
-        return Response.status_code(404)
+        abort(404)
 
     # Resize the image if it doesn't exist
     # Get the desired width from query parameter
@@ -57,6 +57,11 @@ def images(path):
 @app.route('/<path:path>')
 def catch_all(path):
     return app.send_static_file("index.html")
+
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return "404 Not Found", 404
 
 
 if __name__ == '__main__':

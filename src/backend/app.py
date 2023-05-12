@@ -5,10 +5,12 @@ import pandas as pd
 import random
 from PIL import Image
 
+from image_similarity import ImageSimilarity
+
 app = Flask(__name__, static_folder='wwwroot', static_url_path="/")
 CORS(app)
 
-data_path = os.environ.get("DATA_PATH", "c:\\temp\\paulhackt")
+data_path = os.environ.get("DATA_PATH", "../../../data")
 images_path = os.path.join(data_path, 'images')
 resized_images_path = os.path.join(data_path, 'resized_images')
 
@@ -21,6 +23,8 @@ klee_cosmos_data["ID"] = klee_cosmos_data["ID"].astype("int")
 if not os.path.exists(resized_images_path):
     os.makedirs(resized_images_path)
 
+# Load similarity class
+image_similarity = ImageSimilarity(data_path, images_path)
 
 @app.route("/heartbeat")
 def heartbeat():
@@ -106,6 +110,11 @@ def image_description(path):
         "title": title,
         "year": year
     }
+
+@app.route('/api/similarimages/<path:path>')
+def similar_images(path):
+    image_ids = image_similarity.get_similar_images(path, 5)
+    return jsonify(image_ids)
 
 
 @app.route('/', defaults={'path': ''})

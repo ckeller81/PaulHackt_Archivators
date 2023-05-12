@@ -14,6 +14,9 @@
           </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
+      <div class="d-none d-md-block">
+        <img src="/assets/images/logo-zpk-nt.png" />
+      </div>
     </b-navbar>
   </header>
   <b-container fluid>

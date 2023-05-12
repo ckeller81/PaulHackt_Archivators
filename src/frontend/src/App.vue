@@ -1,85 +1,48 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <b-navbar type="dark" variant="dark" expand="md">
+      <b-navbar-brand :to="'/'">
+        <img src="/assets/images/logo.png" class="header-logo" alt="Paul Hackt - Archivators" />
+        <span class="ms-3">Paul Hackt - Archivators</span>
+      </b-navbar-brand>
+      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
+      <b-collapse id="nav-collapse" is-nav>
+        <b-navbar-nav>
+          <b-nav-item v-for="route in routes" :key="route.path" :to="route.path" exact>
+            {{ route.meta?.title }}
+          </b-nav-item>
+        </b-navbar-nav>
+      </b-collapse>
+    </b-navbar>
   </header>
-
-  <RouterView />
+  <b-container fluid>
+    <b-row>
+      <b-col cols="12">
+        <router-view />
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script lang="ts">
+import { RouterView, useRouter } from "vue-router";
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+export default {
+  setup() {
+    const router = useRouter();
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
+    const routes = router.options.routes.filter((route) => route.meta && route.meta.title);
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
+    return {
+      routes,
+    };
+  },
+};
+</script>
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+<style>
+.header-logo {
+  height: 75px;
 }
 </style>

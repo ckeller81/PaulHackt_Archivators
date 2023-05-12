@@ -1,5 +1,6 @@
 {
   "files": [],
+  "include": ["components.d.ts"],
   "references": [
     {
       "path": "./tsconfig.node.json"
@@ -7,5 +8,10 @@
     {
       "path": "./tsconfig.app.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "types": [
+      "unplugin-icons/types/vue",
+    ]
+  }
 }

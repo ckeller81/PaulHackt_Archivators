@@ -1,64 +1,66 @@
 <template>
   <main>
-    <h1>
-      Ausstellung <cite>{{ exhibition?.title }}</cite>
-    </h1>
+    <div>
+      <h1>
+        Ausstellung <cite>{{ exhibition?.title }}</cite>
+      </h1>
 
-    <b-card>
-      <b-card-title class="text-center">
-        <span class="fs-2">
-          &laquo;{{ currentImageDescription?.title }}&raquo; ({{ currentImageDescription?.year }})
-        </span>
-      </b-card-title>
-      <div class="loader" v-if="isLoading">
-        <b-spinner v-if="isLoading" label="Loading..." />
-      </div>
-      <b-row no-gutters class="card-row">
-        <b-col md="6" class="height-full-column d-flex align-items-center justify-content-start">
-          <img
-            v-if="currentImageId"
-            :src="imageService.getImageUrl(currentImageId, 1000)"
-            class="rounded-0 image-fit"
-            @load="isImageLoading = false"
-          />
-        </b-col>
-        <b-col md="6" class="height-full-column d-flex flex-column">
-          <div class="actions d-flex flex-row justify-content-between w-100" aria-hidden="true">
-            <div class="ms-4">
+      <b-card>
+        <b-card-title class="text-center">
+          <span class="fs-2">
+            &laquo;{{ currentImageDescription?.title }}&raquo; ({{ currentImageDescription?.year }})
+          </span>
+        </b-card-title>
+        <div class="loader" v-if="isLoading">
+          <b-spinner v-if="isLoading" label="Loading..." />
+        </div>
+        <b-row no-gutters class="card-row">
+          <b-col md="6" class="height-full-column d-flex align-items-center justify-content-start">
+            <img
+              v-if="currentImageId"
+              :src="imageService.getImageUrl(currentImageId, 1000)"
+              class="rounded-0 image-fit"
+              @load="isImageLoading = false"
+            />
+          </b-col>
+          <b-col md="6" class="height-full-column d-flex flex-column">
+            <div class="actions d-flex flex-row justify-content-between w-100" aria-hidden="true">
+              <div class="ms-4">
+                <button
+                  class="btn btn-outline-primary my-4 me-2"
+                  @click="previousImage"
+                  aria-label="Vorheriges Kunstwerk"
+                  title="Vorheriges Kunstwerk"
+                >
+                  <i-mdi-arrow-left-bold class="icon" />
+                </button>
+                <button
+                  class="btn btn-outline-primary my-4 me-2"
+                  @click="nextImage"
+                  aria-label="Nächstes Kunstwerk"
+                  title="Nächstes Kunstwerk"
+                >
+                  <i-mdi-arrow-right-bold class="icon" />
+                </button>
+              </div>
               <button
                 class="btn btn-outline-primary my-4 me-2"
-                @click="previousImage"
-                aria-label="Vorheriges Kunstwerk"
-                title="Vorheriges Kunstwerk"
+                @click="speakCurrentImageDescription"
+                aria-label="Beschreibung vorlesen"
+                title="Beschreibung vorlesen"
               >
-                <i-mdi-arrow-left-bold class="icon" />
-              </button>
-              <button
-                class="btn btn-outline-primary my-4 me-2"
-                @click="nextImage"
-                aria-label="Nächstes Kunstwerk"
-                title="Nächstes Kunstwerk"
-              >
-                <i-mdi-arrow-right-bold class="icon" />
+                <i-mdi-speak class="icon" :class="{ 'is-speaking': isSpeaking }" />
               </button>
             </div>
-            <button
-              class="btn btn-outline-primary my-4 me-2"
-              @click="speakCurrentImageDescription"
-              aria-label="Beschreibung vorlesen"
-              title="Beschreibung vorlesen"
-            >
-              <i-mdi-speak class="icon" :class="{ 'is-speaking': isSpeaking }" />
-            </button>
-          </div>
-          <div class="d-flex flex-column align-items-center justify-content-center flex-fill">
-            <blockquote class="blockquote fs-3 ms-4">
-              <p class="image-description">{{ currentImageDescription?.description }}</p>
-            </blockquote>
-          </div>
-        </b-col>
-      </b-row>
-    </b-card>
+            <div class="d-flex flex-column align-items-center justify-content-center flex-fill">
+              <blockquote class="blockquote fs-3 ms-4">
+                <p class="image-description">{{ currentImageDescription?.description }}</p>
+              </blockquote>
+            </div>
+          </b-col>
+        </b-row>
+      </b-card>
+    </div>
   </main>
 </template>
 

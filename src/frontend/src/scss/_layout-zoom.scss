@@ -1,0 +1,24 @@
+.zoom-transition-enter-active,
+.zoom-transition-leave-active {
+  transition: all 0.5s;
+  position: absolute;
+  top: 153px;
+  left: 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 153px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.zoom-transition-enter-from,
+.zoom-transition-leave-to {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.zoom-transition-enter-to,
+.zoom-transition-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}

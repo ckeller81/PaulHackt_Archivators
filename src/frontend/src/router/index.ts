@@ -8,6 +8,9 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
+      meta: {
+        transition: "zoom-transition",
+      },
     },
     {
       path: "/archive",
@@ -15,6 +18,7 @@ const router = createRouter({
       component: () => import("../views/ArchiveView.vue"),
       meta: {
         title: "Archiv",
+        transition: "zoom-transition",
       },
     },
     {
@@ -23,6 +27,7 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
       meta: {
         title: "Über uns",
+        transition: "zoom-transition",
       },
     },
   ],

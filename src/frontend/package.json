@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "animate.css": "^4.1.1",
     "bootstrap": "^5.2.3",
     "bootstrap-vue-next": "^0.8.11",
     "pinia": "^2.0.35",

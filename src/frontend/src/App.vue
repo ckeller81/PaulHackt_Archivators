@@ -26,7 +26,11 @@
   <b-container fluid>
     <b-row>
       <b-col cols="12">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <transition name="zoom-transition">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </b-col>
     </b-row>
   </b-container>

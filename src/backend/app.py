@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_file, request, abort
 from flask_cors import CORS
 import os
+import pandas as pd
 import random
 from PIL import Image
 
@@ -10,6 +11,12 @@ CORS(app)
 data_path = os.environ.get("DATA_PATH", "c:\\temp\\paulhackt")
 images_path = os.path.join(data_path, 'images')
 resized_images_path = os.path.join(data_path, 'resized_images')
+
+klee_cosmos_data = pd.read_csv(os.path.join(
+    data_path, "A_Kunstwerke.csv"), header=0, sep=";"
+)
+klee_cosmos_data = klee_cosmos_data[:454]
+klee_cosmos_data["ID"] = klee_cosmos_data["ID"].astype("int")
 
 if not os.path.exists(resized_images_path):
     os.makedirs(resized_images_path)
@@ -89,8 +96,15 @@ def image_description(path):
     with open(text_file_path, "r", encoding="utf-8") as f:
         text = f.read()
 
+    csv_row = klee_cosmos_data[klee_cosmos_data["ID"] == int(path)]
+    if len(csv_row) > 0:
+        title = csv_row["Titel DE"].values[0]
+        year = csv_row["Datierung"].values[0]
+
     return {
-        "description": text
+        "description": text,
+        "title": title,
+        "year": year
     }
 
 

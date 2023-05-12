@@ -5,6 +5,11 @@
     </h1>
 
     <b-card>
+      <b-card-title class="text-center">
+        <span class="fs-2">
+          &laquo;{{ currentImageDescription?.title }}&raquo; ({{ currentImageDescription?.year }})
+        </span>
+      </b-card-title>
       <div class="loader" v-if="isLoading">
         <b-spinner v-if="isLoading" label="Loading..." />
       </div>
@@ -47,7 +52,7 @@
           </div>
           <div class="d-flex flex-column align-items-center justify-content-center flex-fill">
             <blockquote class="blockquote fs-3 ms-4">
-              <p class="image-description">{{ currentImageDescription }}</p>
+              <p class="image-description">{{ currentImageDescription?.description }}</p>
             </blockquote>
           </div>
         </b-col>
@@ -61,6 +66,7 @@ import { ImageService } from "@/services/image-service";
 import { DescriptionService } from "@/services/description-service";
 import { ref } from "vue";
 import type { ExhibitionModel } from "@/models/exhibition-model";
+import type { ImageDescriptionModel } from "@/models/image-description-model";
 
 export default {
   name: "HomeView",
@@ -69,7 +75,7 @@ export default {
     const descriptionService = new DescriptionService();
 
     const currentImageId = ref<string | null>(null);
-    const currentImageDescription = ref<string | null>(null);
+    const currentImageDescription = ref<ImageDescriptionModel | null>(null);
     const exhibition = ref<ExhibitionModel | null>(null);
     const isSpeaking = ref(false);
     const isLoading = ref(false);
@@ -102,7 +108,7 @@ export default {
         this.currentImageId = this.exhibition.imageIds[0];
       }
 
-      this.currentImageDescription = (await this.loadDescription(this.currentImageId)).description;
+      this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
       this.isLoading = false;
     },
@@ -118,9 +124,7 @@ export default {
 
         this.isLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
-        this.currentImageDescription = (
-          await this.loadDescription(this.currentImageId)
-        ).description;
+        this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
         this.isLoading = false;
       }
@@ -133,9 +137,7 @@ export default {
 
         this.isLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
-        this.currentImageDescription = (
-          await this.loadDescription(this.currentImageId)
-        ).description;
+        this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
         this.isLoading = false;
       }
@@ -195,7 +197,7 @@ export default {
 }
 
 .height-full-column {
-  height: calc(100vh - 2.5rem - 214px);
+  height: calc(100vh - 2.5rem - 214px - 39px);
 }
 
 .image-fit {

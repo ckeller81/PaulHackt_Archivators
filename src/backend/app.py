@@ -52,6 +52,18 @@ def images(path):
 
     return send_file(full_image_path, mimetype='image/jpg')
 
+@app.route('/api/description/<path:path>')
+def image_description(path):
+    text_file_path = os.path.join(data_path, f"{path}.txt")
+    if not os.path.exists(text_file_path):
+        abort(404)
+
+    with open(text_file_path, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    return {
+        "description": text
+    }
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

@@ -9,12 +9,14 @@
         <b-col md="6" class="height-full-column d-flex align-items-center justify-content-start">
           <img :src="imageService.getImageUrl(currentImageId, 1000)" class="rounded-0 image-fit" />
         </b-col>
-        <b-col md="6" class="height-full-column d-flex align-items-center justify-content-end">
-          <div class="actions position-absolute top-0 end-0 p-3">
-            <i-mdi-speak class="icon" @click="speakCurrentImageDescription" />
+        <b-col md="6" class="height-full-column d-flex align-items-center justify-content-start">
+          <div class="actions position-absolute top-0 end-0" aria-hidden="true">
+            <button class="btn btn-outline-primary m-4" @click="speakCurrentImageDescription">
+              <i-mdi-speak class="icon" :class="{ 'is-speaking': isSpeaking }" />
+            </button>
           </div>
-          <blockquote class="blockquote fs-3 me-5">
-            <p>{{ currentImageDescription }}</p>
+          <blockquote class="blockquote fs-3">
+            <p class="image-description">{{ currentImageDescription }}</p>
           </blockquote>
         </b-col>
       </b-row>
@@ -76,6 +78,14 @@ export default {
           const u = new SpeechSynthesisUtterance(this.currentImageDescription);
           u.rate = 1.3;
           u.lang = "de-DE";
+
+          u.onend = () => {
+            this.isSpeaking = false;
+          };
+          u.onerror = () => {
+            this.isSpeaking = false;
+          };
+
           speechSynthesis.speak(u);
 
           this.isSpeaking = true;
@@ -90,6 +100,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import "@/scss/variables.scss";
+
 .text-justified {
   text-align: justify;
   text-justify: inter-word;
@@ -110,6 +122,26 @@ export default {
   .icon {
     font-size: 3rem;
     cursor: pointer;
+
+    &.is-speaking {
+      animation: colorAnimation 2s linear infinite;
+    }
+  }
+}
+
+.image-description {
+  height: 100%;
+}
+
+@keyframes colorAnimation {
+  0% {
+    color: #ea583d;
+  }
+  50% {
+    color: #f9a17b;
+  }
+  100% {
+    color: #ea583d;
   }
 }
 </style>

@@ -2,8 +2,8 @@
 $enable-negative-margins: true;
 
 //Theme colors
-$primary: #465957;
-$secondary: #d8e395;
+$primary: #272838;
+$secondary: #f3de8a;
 $success: #198754;
 $info: #0dcaf0;
 $warning: #ffc700;
@@ -16,7 +16,7 @@ $gray-400: #adadad;
 $gray-500: #898888;
 
 $body-bg: $light;
-$body-color: $dark;
+$body-color: $primary;
 
 //Threshhold to decide if font with a background should be white or black (remove for future themes)
 $min-contrast-ratio: 2.3;

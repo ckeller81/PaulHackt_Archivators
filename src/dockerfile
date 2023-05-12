@@ -1,3 +1,11 @@
+FROM node:16 AS frontendbuild
+WORKDIR /app
+
+COPY ./src/frontend .
+
+RUN npm install
+RUN npm run build
+
 # Use an official Python runtime as the base image
 FROM python:3.9-slim
 
@@ -12,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the project files into the container
 COPY ./src/backend/ .
+COPY --from=frontendbuild /src/dist ./wwwroot
 
 # Set any necessary environment variables
 ENV PYTHONUNBUFFERED=1

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, send_file, request, abort
 from flask_cors import CORS
 import os
+import random
 from PIL import Image
 
 app = Flask(__name__, static_folder='wwwroot', static_url_path="/")
@@ -21,17 +22,23 @@ def heartbeat():
 
 @app.route('/api/images/exhibition')
 def exhibition():
+    # Get all files in the folder
+    files = os.listdir(images_path)
+
+    # Filter files to only include those ending with ".jpg"
+    jpg_files = [file for file in files if file.endswith(".jpg")]
+
+    # Pick 20 random files from the list
+    random_files = random.sample(jpg_files, 20)
+
+    # Get filenames without extensions
+    filenames_without_extension = [
+        os.path.splitext(file)[0] for file in random_files
+    ]
+
     return {
         "title": "Kosmos Klee",
-        "imageIds": [
-            "24840",
-            "23035",
-            "16251",
-            "50230",
-            "18585",
-            "17738",
-            "50001",
-        ]
+        "imageIds": filenames_without_extension
     }
 
 

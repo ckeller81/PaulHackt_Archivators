@@ -25,6 +25,8 @@ COPY --from=frontendbuild /app/dist wwwroot
 # Set any necessary environment variables
 ENV PYTHONUNBUFFERED=1
 
+ENV DATA_PATH=/data
+
 # Expose any necessary ports (e.g., for a web server)
 EXPOSE 8000
 

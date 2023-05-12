@@ -2,8 +2,12 @@
   <header>
     <b-navbar type="dark" variant="dark" expand="md">
       <b-navbar-brand :to="'/'">
-        <img src="/assets/images/logo.png" class="header-logo" alt="Paul Hackt - Archivators" />
-        <span class="ms-3">Paul Hackt - Archivators</span>
+        <img
+          src="/assets/images/logo_archivators.png"
+          class="header-logo"
+          alt="Paul Hackt - Archivators"
+        />
+        <span class="ms-3">Archivators - Paul Klee erleben</span>
       </b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -14,7 +18,7 @@
           </b-nav-item>
         </b-navbar-nav>
       </b-collapse>
-      <div class="d-none d-md-block">
+      <div class="d-none d-md-block me-n3">
         <img src="/assets/images/logo-zpk-nt.png" />
       </div>
     </b-navbar>
@@ -46,6 +50,6 @@ export default {
 
 <style>
 .header-logo {
-  height: 75px;
+  height: 125px;
 }
 </style>

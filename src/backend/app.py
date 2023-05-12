@@ -33,7 +33,7 @@ def images(path):
     if os.path.exists(resized_image_path):
         return send_file(resized_image_path, mimetype='image/jpg')
 
-    if os.path.exists(full_image_path):
+    if not os.path.exists(full_image_path):
         # Return 404 error
         return Response.status_code(404)
 

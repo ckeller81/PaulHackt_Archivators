@@ -19,6 +19,7 @@
             v-if="currentImageId"
             :src="imageService.getImageUrl(currentImageId, 1000)"
             class="rounded-0 image-fit"
+            @load="isImageLoading = false"
           />
         </b-col>
         <b-col md="6" class="height-full-column d-flex flex-column">
@@ -64,7 +65,7 @@
 <script lang="ts">
 import { ImageService } from "@/services/image-service";
 import { DescriptionService } from "@/services/description-service";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import type { ExhibitionModel } from "@/models/exhibition-model";
 import type { ImageDescriptionModel } from "@/models/image-description-model";
 
@@ -78,7 +79,9 @@ export default {
     const currentImageDescription = ref<ImageDescriptionModel | null>(null);
     const exhibition = ref<ExhibitionModel | null>(null);
     const isSpeaking = ref(false);
-    const isLoading = ref(false);
+    const isServiceLoading = ref(true);
+    const isImageLoading = ref(true);
+    const isLoading = computed(() => isServiceLoading.value || isImageLoading.value);
 
     return {
       imageService,
@@ -88,6 +91,8 @@ export default {
       currentImageDescription,
       exhibition,
       isSpeaking,
+      isServiceLoading,
+      isImageLoading,
       isLoading,
     };
   },
@@ -99,7 +104,7 @@ export default {
   },
   methods: {
     async loadMainImage() {
-      this.isLoading = true;
+      this.isServiceLoading = true;
       if (this.exhibition === null) {
         this.exhibition = await this.imageService.getExhibition();
       }
@@ -110,7 +115,7 @@ export default {
 
       this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
-      this.isLoading = false;
+      this.isServiceLoading = false;
     },
     async loadDescription(imageId: string) {
       return this.descriptionService.get(imageId);
@@ -119,33 +124,39 @@ export default {
       const currentIndex = this.exhibition?.imageIds.indexOf(this.currentImageId ?? "");
 
       if (this.exhibition !== null && currentIndex !== undefined && currentIndex !== null) {
+        speechSynthesis.cancel();
+        this.isImageLoading = true;
+
         const nextIndex =
           (currentIndex - 1 + this.exhibition.imageIds.length) % this.exhibition.imageIds.length;
 
-        this.isLoading = true;
+        this.isServiceLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
         this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
-        this.isLoading = false;
+        this.isServiceLoading = false;
       }
     },
     async nextImage() {
       const currentIndex = this.exhibition?.imageIds.indexOf(this.currentImageId ?? "");
 
       if (this.exhibition !== null && currentIndex !== undefined && currentIndex !== null) {
+        speechSynthesis.cancel();
+        this.isImageLoading = true;
+
         const nextIndex = (currentIndex + 1) % this.exhibition.imageIds.length;
 
-        this.isLoading = true;
+        this.isServiceLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
         this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
-        this.isLoading = false;
+        this.isServiceLoading = false;
       }
     },
     speakCurrentImageDescription() {
       if (this.currentImageDescription) {
         if (!this.isSpeaking) {
-          const u = new SpeechSynthesisUtterance(this.currentImageDescription);
+          const u = new SpeechSynthesisUtterance(this.currentImageDescription.description);
           u.rate = 1.3;
           u.lang = "de-DE";
 

@@ -1,10 +1,15 @@
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify
 
-app = Flask(__name__, static_url_path='', static_folder='wwwroot')
+app = Flask(__name__, static_folder='wwwroot', static_url_path="/")
 
-@app.route('/')
-def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
+@app.route("/heartbeat")
+def heartbeat():
+    return jsonify({"status": "healthy"})
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return app.send_static_file("index.html")
 
 if __name__ == '__main__':
-    app.run(port=8000)
+    app.run(host='0.0.0.0', port=8000)

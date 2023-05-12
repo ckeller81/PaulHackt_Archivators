@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the project files into the container
 COPY ./src/backend/ .
-COPY --from=frontendbuild /src/dist ./wwwroot
+COPY --from=frontendbuild /app/dist ./wwwroot
 
 # Set any necessary environment variables
 ENV PYTHONUNBUFFERED=1

@@ -27,8 +27,9 @@ jobs:
         username: ${{ secrets.AZURE_CONTAINERREGISTRY_USERNAME }}
         password: ${{ secrets.AZURE_CONTAINERREGISTRY_KEY }}
 
-    - name: Build and push Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --platform linux/amd64 --push -t ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest -f /src/Dockerfile .
-
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        file: ./src/Dockerfile

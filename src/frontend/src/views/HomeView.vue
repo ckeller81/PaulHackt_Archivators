@@ -34,6 +34,9 @@
                 >
                   <i-mdi-arrow-left-bold class="icon" />
                 </button>
+                <button class="btn btn-outline-primary my-4 me-2" @click="goToArchive">
+                  <i-mdi-archive class="icon" /> <span class="fs-5">im Archiv stöbern</span>
+                </button>
                 <button
                   class="btn btn-outline-primary my-4 me-2"
                   @click="nextImage"
@@ -70,10 +73,14 @@ import { DescriptionService } from "@/services/description-service";
 import { computed, ref } from "vue";
 import type { ExhibitionModel } from "@/models/exhibition-model";
 import type { ImageDescriptionModel } from "@/models/image-description-model";
+import { useRoute } from "vue-router";
 
 export default {
   name: "HomeView",
   data() {
+    const router = useRoute();
+    const imageId = router.query.imageid; // Access the query parameter
+
     const imageService = new ImageService();
     const descriptionService = new DescriptionService();
 
@@ -85,7 +92,12 @@ export default {
     const isImageLoading = ref(true);
     const isLoading = computed(() => isServiceLoading.value || isImageLoading.value);
 
+    if (imageId) {
+      currentImageId.value = imageId as string;
+    }
+
     return {
+      router,
       imageService,
       descriptionService,
 
@@ -108,11 +120,12 @@ export default {
     async loadMainImage() {
       this.isServiceLoading = true;
       if (this.exhibition === null) {
-        this.exhibition = await this.imageService.getExhibition();
+        this.exhibition = await this.imageService.getExhibition(this.currentImageId);
       }
 
       if (this.currentImageId === null || this.currentImageId.length === 0) {
         this.currentImageId = this.exhibition.imageIds[0];
+        this.updateCurrentImageQuery();
       }
 
       this.currentImageDescription = await this.loadDescription(this.currentImageId);
@@ -134,6 +147,9 @@ export default {
 
         this.isServiceLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
+
+        this.updateCurrentImageQuery();
+
         this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
         this.isServiceLoading = false;
@@ -150,10 +166,21 @@ export default {
 
         this.isServiceLoading = true;
         this.currentImageId = this.exhibition?.imageIds[nextIndex];
+
+        this.updateCurrentImageQuery();
+
         this.currentImageDescription = await this.loadDescription(this.currentImageId);
 
         this.isServiceLoading = false;
       }
+    },
+    goToArchive() {
+      this.$router.push({ name: "archive", query: { imageid: this.currentImageId } });
+    },
+    updateCurrentImageQuery() {
+      const currentQueryParams = { ...this.router.query };
+      currentQueryParams.imageid = this.currentImageId;
+      this.$router.replace({ query: currentQueryParams });
     },
     speakCurrentImageDescription() {
       if (this.currentImageDescription) {

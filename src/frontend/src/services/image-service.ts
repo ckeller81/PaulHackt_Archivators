@@ -10,8 +10,12 @@ export class ImageService {
     this.httpClient = new HttpClient("/api/images");
   }
 
-  public async getExhibition() {
-    return await this.httpClient.Get<ExhibitionModel>("exhibition");
+  public async getExhibition(currentImageId: string | null = null) {
+    if (currentImageId === null) {
+      currentImageId = "";
+    }
+
+    return await this.httpClient.Get<ExhibitionModel>("exhibition/" + currentImageId);
   }
 
   public getImageUrl(imageId: string, width: number | null = null) {

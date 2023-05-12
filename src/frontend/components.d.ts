@@ -10,7 +10,6 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     BCard: typeof import('bootstrap-vue-next')['BCard']
-    BCardImg: typeof import('bootstrap-vue-next')['BCardImg']
     BCardTitle: typeof import('bootstrap-vue-next')['BCardTitle']
     BCol: typeof import('bootstrap-vue-next')['BCol']
     BCollapse: typeof import('bootstrap-vue-next')['BCollapse']
@@ -22,12 +21,9 @@ declare module '@vue/runtime-core' {
     BNavItem: typeof import('bootstrap-vue-next')['BNavItem']
     BRow: typeof import('bootstrap-vue-next')['BRow']
     BSpinner: typeof import('bootstrap-vue-next')['BSpinner']
+    IMdiArchive: typeof import('~icons/mdi/archive')['default']
     IMdiArrowLeftBold: typeof import('~icons/mdi/arrow-left-bold')['default']
     IMdiArrowRightBold: typeof import('~icons/mdi/arrow-right-bold')['default']
-    IMdiBack: typeof import('~icons/mdi/back')['default']
-    IMdiForward: typeof import('~icons/mdi/forward')['default']
-    IMdiNext: typeof import('~icons/mdi/next')['default']
-    IMdiRefresh: typeof import('~icons/mdi/refresh')['default']
     IMdiSpeak: typeof import('~icons/mdi/speak')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

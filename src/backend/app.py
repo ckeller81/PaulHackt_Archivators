@@ -31,8 +31,9 @@ def heartbeat():
     return jsonify({"status": "healthy"})
 
 
-@app.route('/api/images/exhibition')
-def exhibition():
+@app.route('/api/images/exhibition/', defaults={'path': ''})
+@app.route('/api/images/exhibition/<path:path>')
+def exhibition(path):
     # Get all files in the folder
     files = os.listdir(images_path)
 
@@ -41,6 +42,9 @@ def exhibition():
 
     # Pick 20 random files from the list
     random_files = random.sample(jpg_files, 20)
+
+    if path is None or path == "":
+        random_files[random.randint(0, 19)] = path + ".jpg"
 
     # Get filenames without extensions
     filenames_without_extension = [

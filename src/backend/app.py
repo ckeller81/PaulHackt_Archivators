@@ -1,9 +1,13 @@
 from flask import Flask, jsonify, send_file, request, abort
+from flask_cors import CORS
 import os
 from PIL import Image
 
 app = Flask(__name__, static_folder='wwwroot', static_url_path="/")
+CORS(app)
+
 data_path = os.environ.get("DATA_PATH", "c:\\temp\\paulhackt")
+images_path = os.path.join(data_path, 'images')
 resized_images_path = os.path.join(data_path, 'resized_images')
 
 if not os.path.exists(resized_images_path):
@@ -15,9 +19,25 @@ def heartbeat():
     return jsonify({"status": "healthy"})
 
 
+@app.route('/api/images/exhibition')
+def exhibition():
+    return {
+        "title": "Kosmos Klee",
+        "imageIds": [
+            "24840",
+            "23035",
+            "16251",
+            "50230",
+            "18585",
+            "17738",
+            "50001",
+        ]
+    }
+
+
 @app.route('/images/<path:path>')
 def images(path):
-    full_image_path = os.path.join(data_path, 'images', f"{path}.jpg")
+    full_image_path = os.path.join(images_path, f"{path}.jpg")
 
     width = request.args.get('width')
     if width:
@@ -52,9 +72,10 @@ def images(path):
 
     return send_file(full_image_path, mimetype='image/jpg')
 
+
 @app.route('/api/description/<path:path>')
 def image_description(path):
-    text_file_path = os.path.join(data_path, f"{path}.txt")
+    text_file_path = os.path.join(images_path, f"{path}.txt")
     if not os.path.exists(text_file_path):
         abort(404)
 
@@ -64,6 +85,7 @@ def image_description(path):
     return {
         "description": text
     }
+
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

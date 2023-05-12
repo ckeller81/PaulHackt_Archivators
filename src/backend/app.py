@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_file, request
+from flask import Flask, jsonify, send_file, request, Response
 import os
 from PIL import Image
 
@@ -32,6 +32,10 @@ def images(path):
     # Check if the resized image already exists
     if os.path.exists(resized_image_path):
         return send_file(resized_image_path, mimetype='image/jpg')
+
+    if os.path.exists(full_image_path):
+        # Return 404 error
+        return Response.status_code(404)
 
     # Resize the image if it doesn't exist
     # Get the desired width from query parameter

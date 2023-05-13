@@ -7,7 +7,7 @@ from PIL import Image
 
 from image_similarity import ImageSimilarity
 
-app = Flask(__name__, static_folder='wwwroot', static_url_path="/")
+app = Flask(__name__, static_folder='wwwroot')
 CORS(app)
 
 data_path = os.environ.get("DATA_PATH", "../../../data")
@@ -74,7 +74,7 @@ def images(path):
 
     # Check if the resized image already exists
     if os.path.exists(resized_image_path):
-        return send_file(resized_image_path, mimetype='image/jpg')
+        return send_file(resized_image_path, mimetype='image/jpg', etag=True, max_age=31536000, cache_timeout=31536000)
 
     if not os.path.exists(full_image_path):
         # Return 404 error
@@ -89,11 +89,11 @@ def images(path):
             img.thumbnail((width, img.size[1]))
             img.save(resized_image_path, "JPEG")
 
-            return send_file(resized_image_path, mimetype='image/jpg')
+            return send_file(resized_image_path, mimetype='image/jpg', etag=True, max_age=31536000, cache_timeout=31536000)
         except IOError:
             return "Error resizing image."
 
-    return send_file(full_image_path, mimetype='image/jpg')
+    return send_file(full_image_path, mimetype='image/jpg', etag=True, max_age=31536000, cache_timeout=31536000)
 
 
 @app.route('/api/description/<path:path>')
@@ -128,7 +128,12 @@ def similar_images(path):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    return app.send_static_file("index.html")
+    content_path = os.path.join(app.static_folder, path)
+    if (os.path.exists(content_path) and os.path.isfile(content_path)):
+        return send_file(content_path)
+
+    index_path = os.path.join(app.static_folder, 'index.html')
+    return send_file(index_path)
 
 
 @app.errorhandler(404)

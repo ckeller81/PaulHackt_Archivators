@@ -100,7 +100,7 @@ export default {
       this.isLoadAll = false;
       this.loadNeighboursIsCancelled = true;
     },
-    async loadNeighbours(imageId: string, depth: number | null = 0, maxDepth: number = 3) {
+    async loadNeighbours(imageId: string, depth: number | null = 0, maxDepth: number = 2) {
       if (depth === maxDepth) {
         return;
       }
@@ -131,7 +131,7 @@ export default {
 
       this.zoomToFit();
     },
-    loadNeighboursFireAndForget(imageId: string, depth: number | null = 0, maxDepth: number = 3) {
+    loadNeighboursFireAndForget(imageId: string, depth: number | null = 0, maxDepth: number = 2) {
       if (this.loadNeighboursIsCancelled) {
         return;
       }

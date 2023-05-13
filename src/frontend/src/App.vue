@@ -52,8 +52,15 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+@import "@/scss/variables.scss";
+@import "bootstrap/scss/bootstrap-utilities";
+
 .header-logo {
   height: 125px;
+
+  @include media-breakpoint-down(md) {
+    height: 50px;
+  }
 }
 </style>

@@ -209,8 +209,9 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 @import "@/scss/variables.scss";
+@import "bootstrap/scss/bootstrap-utilities";
 
 .loader {
   position: absolute;
@@ -237,7 +238,9 @@ export default {
 }
 
 .height-full-column {
-  height: calc(100vh - 2.5rem - 214px - 39px);
+  @include media-breakpoint-up(md) {
+    height: calc(100vh - 2.5rem - 214px - 39px);
+  }
 }
 
 .image-fit {
@@ -255,6 +258,38 @@ export default {
     &.is-speaking {
       animation: colorAnimation 2s linear infinite;
     }
+  }
+
+  @include media-breakpoint-down(md) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+
+    background: #fff;
+
+    flex-direction: column !important;
+
+    > div {
+      margin: 0 auto !important;
+
+      button {
+        margin: 0.5rem 0.5rem 0.5rem 0 !important;
+      }
+    }
+
+    > button {
+      margin: 0 auto 0.5rem auto !important;
+    }
+
+    .icon {
+      font-size: 1rem;
+    }
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .card {
+    margin-bottom: 116px !important;
   }
 }
 

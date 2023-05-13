@@ -17,16 +17,6 @@ const router = createRouter({
       name: "archive",
       component: () => import("../views/ArchiveView.vue"),
       meta: {
-        title: "Archiv",
-        transition: "zoom-transition",
-      },
-    },
-    {
-      path: "/about",
-      name: "about",
-      component: () => import("../views/AboutView.vue"),
-      meta: {
-        title: "Über uns",
         transition: "zoom-transition",
       },
     },

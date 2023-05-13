@@ -45,7 +45,7 @@ class ImageSimilarity:
 
         return triplet_images
 
-    def get_similar_images(self, query_image_id: str, top_n: int) -> list[str]:
+    def get_similar_images(self, query_image_id: str) -> list[dict]:
         similar_images = list()
 
         # Load the image
@@ -54,16 +54,18 @@ class ImageSimilarity:
 
         # Execute query
         query_embed = self._gen_embedding(self.triple_net, query_img)
-        predictions = self.neighbour_model.kneighbors(query_embed)
+        predictions = self.neighbour_model.kneighbors(query_embed, return_distance=True)
+
+        merged_list = [(predictions[1][0][i], predictions[0][0][i]) for i in range(0, len(predictions[0][0]))]
 
         # Triplet images
         training_images = self._load_triplet_images()
 
-        for index, val in enumerate(predictions[1][0]):
-            if index == top_n:
-                break
-
-            similar_images.append(os.path.basename(training_images[val]).replace(".jpg", ""))
+        for image_id, score in merged_list:
+            similar_images.append({
+                "image_id": os.path.basename(training_images[int(image_id)]).replace(".jpg", ""),
+                "score": float(score)
+            })
 
         return similar_images
 

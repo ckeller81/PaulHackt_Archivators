@@ -86,7 +86,7 @@ def plot_results(query, top_N, results, images):
 
 def train_neighbor_model(embedding_data):
     # n_neighbors is 500 because there are 200 classes and 100,000 images in training space
-    neighbor_model = NearestNeighbors(n_neighbors=5, algorithm='kd_tree', n_jobs=-1)
+    neighbor_model = NearestNeighbors(n_neighbors=6, algorithm='kd_tree', n_jobs=-1)
     neighbor_model.fit(embedding_data)
     dump(neighbor_model, 'checkpoint/neighbor_model.joblib')
     return neighbor_model
@@ -104,7 +104,7 @@ def predict_unseen(test_query, top_N, training_images, embedding_space, is_gpu):
 
     query_embed = gen_embedding(net, query_img, is_gpu)
 
-    predictions = neighbor_model.kneighbors(query_embed)
+    predictions = neighbor_model.kneighbors(query_embed, return_distance=True)
 
     plot_results(test_query, top_N, predictions, training_images)
 

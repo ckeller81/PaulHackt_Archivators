@@ -22,9 +22,11 @@ declare module '@vue/runtime-core' {
     BRow: typeof import('bootstrap-vue-next')['BRow']
     BSpinner: typeof import('bootstrap-vue-next')['BSpinner']
     IMdiArchive: typeof import('~icons/mdi/archive')['default']
+    IMdiArrowExpandAll: typeof import('~icons/mdi/arrow-expand-all')['default']
     IMdiArrowLeftBold: typeof import('~icons/mdi/arrow-left-bold')['default']
     IMdiArrowRightBold: typeof import('~icons/mdi/arrow-right-bold')['default']
     IMdiSpeak: typeof import('~icons/mdi/speak')['default']
+    IMdiStopRemove: typeof import('~icons/mdi/stop-remove')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

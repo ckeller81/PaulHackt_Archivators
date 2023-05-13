@@ -3,12 +3,22 @@
     <div class="archive">
       <div class="actions-container position-absolute top-0 right-0 m-5">
         <button
+          v-if="!isLoadAll"
           class="btn btn-outline-primary my-4 me-2"
-          @click="backToExhibition"
-          aria-label="Zurück zur Ausstellung"
-          title="Zurück zur Ausstellung"
+          @click="startLoadAll"
+          aria-label="Alles anzeigen"
+          title="Alles anzeigen"
         >
-          <i-mdi-arrow-left-bold class="icon" />
+          <i-mdi-arrow-expand-all class="icon" />
+        </button>
+        <button
+          v-else
+          class="btn btn-outline-primary my-4 me-2"
+          @click="stopLoadAll"
+          aria-label="Laden abbrechen"
+          title="Laden abbrechen"
+        >
+          <i-mdi-stop-remove class="icon text-danger" />
         </button>
       </div>
       <div ref="graphContainer" class="graph-container z-0" />
@@ -36,6 +46,10 @@ export default {
     const graph = ref<any>(null);
     const initializedNodeIds = ref<string[]>([]);
     const isZooming = ref(false);
+    const loadNeighboursIsCancelled = ref(false);
+    const isLoadAll = ref(false);
+    const isPaning = ref(false);
+    const parallelLoadingCount = ref(0);
 
     return {
       imageService,
@@ -45,6 +59,10 @@ export default {
       graph,
       initializedNodeIds,
       isZooming,
+      loadNeighboursIsCancelled,
+      isLoadAll,
+      isPaning,
+      parallelLoadingCount,
 
       imageId,
     };
@@ -52,7 +70,8 @@ export default {
   async mounted() {
     this.loadGraph();
 
-    this.initializeNode(this.imageId);
+    this.initializedNodeIds.push(this.imageId);
+    this.initializeNode(this.imageId, undefined, true);
 
     this.zoomToFit();
 
@@ -65,16 +84,36 @@ export default {
         query: { imageid: this.imageId },
       });
     },
-    async loadNeighbours(imageId: string, depth: number | null = 0) {
-      if (depth === 2) {
+    async startLoadAll() {
+      this.isLoadAll = true;
+      this.loadNeighboursIsCancelled = false;
+
+      this.loadGraph();
+      this.initializedNodeIds = [];
+      this.initializedNodeIds.push(this.imageId);
+      this.initializeNode(this.imageId, undefined, true);
+
+      this.zoomToFit();
+      await this.loadNeighbours(this.imageId, 0, 50);
+    },
+    stopLoadAll() {
+      this.isLoadAll = false;
+      this.loadNeighboursIsCancelled = true;
+    },
+    async loadNeighbours(imageId: string, depth: number | null = 0, maxDepth: number = 3) {
+      if (depth === maxDepth) {
         return;
       }
       depth = depth ?? 0;
 
       const neighbours = await this.similarImagesService.getSimilarImages(imageId);
-      const { nodes, links } = this.graph.graphData();
+      const { links } = this.graph.graphData();
 
       for (const neighbour of neighbours.images) {
+        if (this.loadNeighboursIsCancelled) {
+          return;
+        }
+
         if (
           this.imageId !== neighbour.image_id &&
           !this.initializedNodeIds.find((nodeId) => nodeId === neighbour.image_id)
@@ -82,7 +121,7 @@ export default {
           this.initializedNodeIds.push(neighbour.image_id);
           await this.initializeNode(neighbour.image_id, imageId);
 
-          this.loadNeighboursFireAndForget(neighbour.image_id, depth + 1);
+          this.loadNeighboursFireAndForget(neighbour.image_id, depth + 1, maxDepth);
         }
         if (!links.find((link: any) => link.source === imageId && link.target === neighbour)) {
           await this.waitForNodeInit(neighbour.image_id);
@@ -92,9 +131,13 @@ export default {
 
       this.zoomToFit();
     },
-    loadNeighboursFireAndForget(imageId: string, depth: number | null = 0) {
+    loadNeighboursFireAndForget(imageId: string, depth: number | null = 0, maxDepth: number = 3) {
+      if (this.loadNeighboursIsCancelled) {
+        return;
+      }
+
       setTimeout(() => {
-        this.loadNeighbours(imageId, depth).catch((error) => {
+        this.loadNeighbours(imageId, depth, maxDepth).catch((error) => {
           console.error(error);
         });
       }, 125);
@@ -103,7 +146,11 @@ export default {
       let counter = 0;
       return new Promise<void>((resolve) => {
         const interval = setInterval(() => {
-          if (this.initializedNodeIds.find((id) => id === nodeId)) {
+          const { nodes, links } = this.graph.graphData();
+          if (
+            this.initializedNodeIds.find((id) => id === nodeId) &&
+            nodes.find((node: any) => node.id === nodeId)
+          ) {
             clearInterval(interval);
             resolve();
           } else {
@@ -116,11 +163,16 @@ export default {
         }, 100);
       });
     },
-    async initializeNode(imageId: string, sourceImageId?: string) {
+    async initializeNode(imageId: string, sourceImageId?: string, isRootNode: boolean = false) {
+      if (this.parallelLoadingCount > 10) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+      this.parallelLoadingCount++;
+
       const imageUrl = this.imageService.getImageUrl(imageId, 512);
       const img = await this.loadImage(imageUrl);
 
-      const node = { id: imageId, url: imageUrl, img: img };
+      const node = { id: imageId, url: imageUrl, img: img, isRootNode: isRootNode };
       const link = { source: sourceImageId, target: imageId };
 
       const { nodes, links } = this.graph.graphData();
@@ -131,6 +183,8 @@ export default {
         nodes: newNodes,
         links: newLinks,
       });
+
+      this.parallelLoadingCount--;
     },
     initializeLink(sourceImageId: string, targetImageId: string) {
       const link = { source: sourceImageId, target: targetImageId };
@@ -159,8 +213,22 @@ export default {
         .nodePointerAreaPaint(this.drawPointerArea)
         .width(containerWidth)
         .height(containerHeight)
-        .enableNodeDrag(false)
         .cooldownTicks(200)
+        .enableNodeDrag(false)
+        .onZoom(() => {
+          this.isPaning = true;
+        })
+        .onZoomEnd(() => {
+          this.isPaning = false;
+        })
+        .onNodeClick((node, event) => {
+          if (!this.isPaning) {
+            this.$router.push({
+              name: "home",
+              query: { imageid: node.id },
+            });
+          }
+        })
         .graphData(data);
 
       this.graph.onEngineStop(() => this.graph.zoomToFit(250, 50));
@@ -177,13 +245,22 @@ export default {
         this.isZooming = false;
       }, 125);
     },
-    drawNode({ img, x, y }, ctx) {
+    drawNode(node, ctx) {
       const size = 16;
-      ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+      ctx.drawImage(node.img, node.x - size / 2, node.y - size / 2, size, size);
+
+      if (node.isRootNode) {
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = "#ea583d";
+        ctx.beginPath();
+        ctx.rect(node.x - size / 2, node.y - size / 2, size, size);
+        ctx.stroke();
+      }
     },
-    drawPointerArea({ img, x, y }, color, ctx) {
+    drawPointerArea(node, color, ctx) {
       const size = 16;
-      //ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+      ctx.fillStyle = color;
+      ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
     },
     loadImage(imageUrl: string) {
       const img = new Image();

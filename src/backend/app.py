@@ -118,7 +118,9 @@ def image_description(path):
 @app.route('/api/similarimages/<path:path>')
 def similar_images(path):
     image_ids = image_similarity.get_similar_images(path, 5)
-    return jsonify(image_ids)
+    return jsonify({
+        "images": image_ids
+    })
 
 
 @app.route('/', defaults={'path': ''})

@@ -18,6 +18,7 @@
 
 <script lang="ts">
 import { ImageService } from "@/services/image-service";
+import { SimilarImagesService } from "@/services/similar-images-service";
 import ForceGraph from "force-graph";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
@@ -27,20 +28,35 @@ export default {
     const router = useRoute();
 
     const imageService = new ImageService();
+    const similarImagesService = new SimilarImagesService();
 
     const imageId = router.query.imageid as string; // Access the query parameter
 
     const graphContainer = ref<any>(null);
+    const graph = ref<any>(null);
+    const initializedNodeIds = ref<string[]>([]);
+    const isZooming = ref(false);
 
     return {
       imageService,
+      similarImagesService,
 
       graphContainer,
+      graph,
+      initializedNodeIds,
+      isZooming,
+
       imageId,
     };
   },
-  mounted() {
+  async mounted() {
     this.loadGraph();
+
+    this.initializeNode(this.imageId);
+
+    this.zoomToFit();
+
+    await this.loadNeighbours(this.imageId);
   },
   methods: {
     backToExhibition() {
@@ -49,38 +65,135 @@ export default {
         query: { imageid: this.imageId },
       });
     },
-    async loadGraph() {
-      const graph = ForceGraph()(this.graphContainer);
+    async loadNeighbours(imageId: string, depth: number | null = 0) {
+      if (depth === 2) {
+        return;
+      }
+      depth = depth ?? 0;
 
-      const imageUrl = this.imageService.getImageUrl(this.imageId);
+      const neighbours = await this.similarImagesService.getSimilarImages(imageId);
+      const { nodes, links } = this.graph.graphData();
+
+      for (const neighbour of neighbours.images) {
+        if (
+          this.imageId !== neighbour.image_id &&
+          !this.initializedNodeIds.find((nodeId) => nodeId === neighbour.image_id)
+        ) {
+          this.initializedNodeIds.push(neighbour.image_id);
+          await this.initializeNode(neighbour.image_id, imageId);
+
+          this.loadNeighboursFireAndForget(neighbour.image_id, depth + 1);
+        }
+        if (!links.find((link: any) => link.source === imageId && link.target === neighbour)) {
+          await this.waitForNodeInit(neighbour.image_id);
+          this.initializeLink(imageId, neighbour.image_id);
+        }
+      }
+
+      this.zoomToFit();
+    },
+    loadNeighboursFireAndForget(imageId: string, depth: number | null = 0) {
+      setTimeout(() => {
+        this.loadNeighbours(imageId, depth).catch((error) => {
+          console.error(error);
+        });
+      }, 125);
+    },
+    async waitForNodeInit(nodeId: string) {
+      let counter = 0;
+      return new Promise<void>((resolve) => {
+        const interval = setInterval(() => {
+          if (this.initializedNodeIds.find((id) => id === nodeId)) {
+            clearInterval(interval);
+            resolve();
+          } else {
+            counter++;
+            if (counter > 100) {
+              clearInterval(interval);
+              resolve();
+            }
+          }
+        }, 100);
+      });
+    },
+    async initializeNode(imageId: string, sourceImageId?: string) {
+      const imageUrl = this.imageService.getImageUrl(imageId, 256);
+      const img = await this.loadImage(imageUrl);
+
+      const node = { id: imageId, url: imageUrl, img: img };
+      const link = { source: sourceImageId, target: imageId };
+
+      const { nodes, links } = this.graph.graphData();
+      const newNodes = [...nodes, node];
+      const newLinks = sourceImageId ? [...links, link] : [...links];
+
+      this.graph.graphData({
+        nodes: newNodes,
+        links: newLinks,
+      });
+    },
+    initializeLink(sourceImageId: string, targetImageId: string) {
+      const link = { source: sourceImageId, target: targetImageId };
+
+      const { nodes, links } = this.graph.graphData();
+      const newLinks = [...links, link];
+
+      this.graph.graphData({
+        nodes: nodes,
+        links: newLinks,
+      });
+    },
+    async loadGraph() {
+      this.graph = ForceGraph()(this.graphContainer);
+
       const data = {
-        nodes: [{ id: this.imageId, url: imageUrl, img: this.loadImage(imageUrl) }],
+        nodes: [],
         links: [],
       };
 
       const containerWidth = this.graphContainer.offsetWidth;
       const containerHeight = this.graphContainer.offsetHeight;
 
-      graph
-        .nodeCanvasObject(({ img, x, y }, ctx) => {
-          const size = 128;
-          ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-        })
-        .nodePointerAreaPaint((node, color, ctx) => {
-          const size = 12;
-          ctx.fillStyle = color;
-          ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
-        })
+      this.graph
+        .nodeCanvasObject(this.drawNode)
+        .nodePointerAreaPaint(this.drawPointerArea)
         .width(containerWidth)
         .height(containerHeight)
         .enableNodeDrag(false)
+        .cooldownTicks(200)
         .graphData(data);
+
+      this.graph.onEngineStop(() => this.graph.zoomToFit(250, 50));
+    },
+    zoomToFit() {
+      if (this.isZooming) {
+        return;
+      }
+
+      this.isZooming = true;
+
+      this.graph.zoomToFit(500, 50);
+      setTimeout(() => {
+        this.isZooming = false;
+      }, 125);
+    },
+    drawNode({ img, x, y }, ctx) {
+      const size = 16;
+      ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+    },
+    drawPointerArea({ img, x, y }, color, ctx) {
+      const size = 16;
+      //ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
     },
     loadImage(imageUrl: string) {
       const img = new Image();
       img.src = imageUrl;
 
-      return img;
+      return new Promise((resolve) => {
+        img.onload = () => {
+          resolve(img);
+        };
+      });
     },
   },
 };

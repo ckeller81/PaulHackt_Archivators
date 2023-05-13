@@ -26,6 +26,7 @@ if not os.path.exists(resized_images_path):
 # Load similarity class
 image_similarity = ImageSimilarity(data_path, images_path)
 
+
 @app.route("/heartbeat")
 def heartbeat():
     return jsonify({"status": "healthy"})
@@ -43,7 +44,7 @@ def exhibition(path):
     # Pick 20 random files from the list
     random_files = random.sample(jpg_files, 20)
 
-    if path is None or path == "":
+    if path is not None or path != "":
         random_files[random.randint(0, 19)] = path + ".jpg"
 
     # Get filenames without extensions
@@ -114,6 +115,7 @@ def image_description(path):
         "title": title,
         "year": year
     }
+
 
 @app.route('/api/similarimages/<path:path>')
 def similar_images(path):

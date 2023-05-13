@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "3d-force-graph": "^1.71.4",
     "animate.css": "^4.1.1",
     "bootstrap": "^5.2.3",
     "bootstrap-vue-next": "^0.8.11",

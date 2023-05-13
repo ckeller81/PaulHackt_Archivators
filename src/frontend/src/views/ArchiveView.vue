@@ -117,7 +117,7 @@ export default {
       });
     },
     async initializeNode(imageId: string, sourceImageId?: string) {
-      const imageUrl = this.imageService.getImageUrl(imageId, 256);
+      const imageUrl = this.imageService.getImageUrl(imageId, 512);
       const img = await this.loadImage(imageUrl);
 
       const node = { id: imageId, url: imageUrl, img: img };
